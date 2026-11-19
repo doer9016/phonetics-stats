@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>漢語語音感知聽辨測驗</title>
+  <style>
+    :root {
+      --bg-color: #faf9f6;
+      --card-bg: #ffffff;
+      --text-main: #2c2c2c;
+      --text-muted: #6b6b6b;
+      --accent: #3b5998;
+      --accent-hover: #2d4373;
+      --border: #e2e0d8;
+      --btn-choice-bg: #f4f3ef;
+      --btn-choice-hover: #e8e6df;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Noto Sans TC", "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 540px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 36px 28px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-top: 0;
+      margin-bottom: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    p {
+      color: var(--text-muted);
+      line-height: 1.6;
+      font-size: 0.95rem;
+      margin-bottom: 24px;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      background: #fff;
+    }
+
+    .btn-primary {
+      background-color: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 14px 28px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.2s;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background-color: #fff;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 12px;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background-color: #f4f3ef;
+      color: var(--text-main);
+    }
+
+    .progress {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .audio-box {
+      margin: 24px 0 32px;
+    }
+
+    .btn-play {
+      background-color: #fff;
+      color: var(--accent);
+      border: 2px solid var(--accent);
+      border-radius: 50px;
+      padding: 14px 32px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-play:hover:not(:disabled) {
+      background-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn-play:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .play-count {
+      display: block;
+      margin-top: 8px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .choices {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 12px;
+    }
+
+    .btn-choice {
+      background-color: var(--btn-choice-bg);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 22px 16px;
+      font-size: 1.35rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-choice:hover:not(:disabled) {
+      background-color: var(--btn-choice-hover);
+      border-color: #c5c2b8;
+      transform: translateY(-1px);
+    }
+
+    .btn-choice:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .summary-box {
+      background: #f8f8f6;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+      text-align: left;
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    .upload-status {
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+    .status-loading { background: #eef2f7; color: #3b5998; }
+    .status-success { background: #eaf6ed; color: #236b38; }
+    .status-error   { background: #fdf0ef; color: #a82820; }
+  </style>
+</head>
+<body>
+
+  <!-- 1. 歡迎與受訪者資訊頁 -->
+  <div id="screen-intro" class="container">
+    <h1>漢語語音感知聽辨測驗</h1>
+    <p>請戴上耳機並處於安靜環境。每題請先點擊「播放聲音」，仔細聆聽雙音節詞的<strong>第一個字</strong>後，從下方兩個拼音選項中選出您聽到的發音。</p>
+    
+    <div class="input-group">
+      <label for="subject-id">受訪者編號 / 姓名（必填）</label>
+      <input type="text" id="subject-id" placeholder="例如：S01" required />
+    </div>
+
+    <div class="input-group">
+      <button type="button" class="btn-play" style="padding: 8px 18px; font-size: 0.9rem;" onclick="testAudio()">🔊 測試音量</button>
+      <span id="test-msg" style="font-size: 0.85rem; color: #6b6b6b; margin-left: 8px;"></span>
+    </div>
+
+    <button class="btn-primary" onclick="startExperiment()">開始測驗</button>
+  </div>
+
+  <!-- 2. 測驗進行頁 -->
+  <div id="screen-quiz" class="container hidden">
+    <div class="progress" id="progress-text">第 1 / 16 題</div>
+    <p style="margin-bottom: 8px;">請聽聲音，選出<strong>第一個音節</strong>的正確拼音：</p>
+
+    <div class="audio-box">
+      <button id="btn-play-audio" class="btn-play" onclick="playCurrentAudio()">
+        <span>▶ 播放聲音</span>
+      </button>
+      <span class="play-count" id="play-count-text">已播放 0 / 2 次（請先播放聲音再作答）</span>
+    </div>
+
+    <div class="choices">
+      <button id="choice-left" class="btn-choice" disabled onclick="submitAnswer(0)">--</button>
+      <button id="choice-right" class="btn-choice" disabled onclick="submitAnswer(1)">--</button>
+    </div>
+  </div>
+
+  <!-- 3. 測驗結束與自動上傳狀態頁 -->
+  <div id="screen-end" class="container hidden">
+    <h1>測驗完成，感謝您的參與！</h1>
+    
+    <div id="upload-status" class="upload-status status-loading">
+      ⏳ 正在自動上傳作答數據至雲端資料庫，請稍候...
+    </div>
+    
+    <div class="summary-box" id="summary-stats"></div>
+
+    <button class="btn-secondary" onclick="downloadCSV()">備用選項：手動下載數據 (.csv)</button>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 【步驟一：請把下方的中文替換成你的 Google Apps Script 網址】
+    // =========================================================================
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyMpbbKUdH83XJ-iIZ7HmN8IDzqbqcp22zigREJ6nlen4eiQmbikFSx51iQAQqKsi_p8A/exec";
+
+
+    // =========================================================================
+    // 【步驟二：題庫設定區（已依你的詞表調整為 2×2 平衡設計：每組各 4 題，共 16 題）】
+    // 提醒：第 5~16 題的 audio 路徑目前暫設為對應拼音檔名，請確認與你 audio/ 資料夾內的實際檔名一致
+    // =========================================================================
+    const rawStimuli = [
+      // --- 組別 1：聲母 j + 韻母 i（齊齒呼，共 4 題）---
+      { id: 1,  audio: "audio/jidan.mp3",       word: "jīdàn",        initial: "j", final: "i", optionA: "jī",    optionB: "qī",    answer: "jī" },
+      { id: 7,  audio: "audio/jiubei.mp3",      word: "jiǔ bēi",      initial: "j", final: "i", optionA: "jiǔ",   optionB: "qiǔ",   answer: "jiǔ" },
+      { id: 10, audio: "audio/jingsai.mp3",     word: "jìng sài",     initial: "j", final: "i", optionA: "jìng",  optionB: "qìng",  answer: "jìng" },
+      { id: 12, audio: "audio/jiangzhuang.mp3", word: "jiǎng zhuàng", initial: "j", final: "i", optionA: "jiǎng", optionB: "qiǎng", answer: "jiǎng" },
+
+      // --- 組別 2：聲母 j + 韻母 u（撮口呼，共 4 題）---
+      { id: 2,  audio: "audio/juda.mp3",        word: "jūdà",         initial: "j", final: "u", optionA: "jū",    optionB: "qū",    answer: "jū" },
+      { id: 5,  audio: "audio/junren.mp3",      word: "jūn rén",      initial: "j", final: "u", optionA: "jūn",   optionB: "qūn",   answer: "jūn" },
+      { id: 9,  audio: "audio/jiongpo.mp3",     word: "jiǒng pò",     initial: "j", final: "u", optionA: "jiǒng", optionB: "qiǒng", answer: "jiǒng" },
+      { id: 15, audio: "audio/juejiang.mp3",    word: "jué jiàng",    initial: "j", final: "u", optionA: "jué",   optionB: "qué",   answer: "jué" },
+
+      // --- 組別 3：聲母 q + 韻母 i（齊齒呼，共 4 題）---
+      { id: 3,  audio: "audio/qidai.mp3",       word: "qīdài",        initial: "q", final: "i", optionA: "qī",    optionB: "jī",    answer: "qī" },
+      { id: 8,  audio: "audio/qiulei.mp3",      word: "qiú lèi",      initial: "q", final: "i", optionA: "qiú",   optionB: "jiú",   answer: "qiú" },
+      { id: 13, audio: "audio/qiangdao.mp3",    word: "qiǎng dào",    initial: "q", final: "i", optionA: "qiǎng", optionB: "jiǎng", answer: "qiǎng" },
+      { id: 14, audio: "audio/qiongkun.mp3",    word: "qióng kùn",    initial: "q", final: "i", optionA: "qióng", optionB: "jióng", answer: "qióng" },
+
+      // --- 組別 4：聲母 q + 韻母 u（撮口呼，共 4 題）---
+      { id: 4,  audio: "audio/qubie.mp3",       word: "qūbié",        initial: "q", final: "u", optionA: "qū",    optionB: "jū",    answer: "qū" },
+      { id: 6,  audio: "audio/qunti.mp3",       word: "qún tǐ",       initial: "q", final: "u", optionA: "qún",   optionB: "jún",   answer: "qún" },
+      { id: 11, audio: "audio/quanxuan.mp3",    word: "quān xuǎn",    initial: "q", final: "u", optionA: "quān",  optionB: "juān",  answer: "quān" },
+      { id: 16, audio: "audio/quebu.mp3",       word: "què bù",       initial: "q", final: "u", optionA: "què",   optionB: "juè",   answer: "què" }
+    ];
+
+    const MAX_PLAYS = 2;
+
+    let subjectId = "";
+    let trials = [];
+    let currentIndex = 0;
+    let playCount = 0;
+    let audioPlayStartTime = 0;
+    let currentAudioObj = null;
+    let currentOptions = [];
+    let results = [];
+
+    function testAudio() {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(440, ctx.currentTime);
+      osc.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.25);
+      document.getElementById("test-msg").textContent = "若聽到「嗶」聲即代表音量正常。";
+    }
+
+    function shuffleArray(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function startExperiment() {
+      const input = document.getElementById("subject-id").value.trim();
+      if (!input) {
+        alert("請先輸入受訪者編號或姓名！");
+        return;
+      }
+      subjectId = input;
+      trials = shuffleArray(rawStimuli);
+      currentIndex = 0;
+      results = [];
+
+      document.getElementById("screen-intro").classList.add("hidden");
+      document.getElementById("screen-quiz").classList.remove("hidden");
+      loadTrial();
+    }
+
+    function loadTrial() {
+      const trial = trials[currentIndex];
+      playCount = 0;
+      audioPlayStartTime = 0;
+
+      document.getElementById("progress-text").textContent = `第 ${currentIndex + 1} / ${trials.length} 題`;
+      document.getElementById("play-count-text").textContent = `已播放 0 / ${MAX_PLAYS} 次（請先播放聲音再作答）`;
+
+      const playBtn = document.getElementById("btn-play-audio");
+      playBtn.disabled = false;
+      playBtn.innerHTML = "<span>▶ 播放聲音</span>";
+
+      currentOptions = Math.random() < 0.5 
+        ? [trial.optionA, trial.optionB] 
+        : [trial.optionB, trial.optionA];
+
+      const leftBtn = document.getElementById("choice-left");
+      const rightBtn = document.getElementById("choice-right");
+
+      leftBtn.textContent = currentOptions[0];
+      rightBtn.textContent = currentOptions[1];
+      leftBtn.disabled = true;
+      rightBtn.disabled = true;
+
+      if (currentAudioObj) {
+        currentAudioObj.pause();
+      }
+      currentAudioObj = new Audio(trial.audio);
+    }
+
+    function playCurrentAudio() {
+      if (playCount >= MAX_PLAYS) return;
+
+      currentAudioObj.currentTime = 0;
+      currentAudioObj.play().then(() => {
+        playCount++;
+        if (playCount === 1) {
+          audioPlayStartTime = performance.now();
+          document.getElementById("choice-left").disabled = false;
+          document.getElementById("choice-right").disabled = false;
+        }
+
+        document.getElementById("play-count-text").textContent = `已播放 ${playCount} / ${MAX_PLAYS} 次`;
+
+        if (playCount >= MAX_PLAYS) {
+          const playBtn = document.getElementById("btn-play-audio");
+          playBtn.disabled = true;
+          playBtn.innerHTML = "<span>已達播放上限</span>";
+        }
+      }).catch(err => {
+        alert("無法播放音檔，請確認 audio 資料夾內是否有對應檔案：" + trials[currentIndex].audio);
+      });
+    }
+
+    function submitAnswer(choiceIndex) {
+      const rt = Math.round(performance.now() - audioPlayStartTime);
+      const trial = trials[currentIndex];
+      const chosen = currentOptions[choiceIndex];
+      const isCorrect = chosen === trial.answer ? 1 : 0;
+
+      results.push({
+        Subject: subjectId,
+        TrialOrder: currentIndex + 1,
+        ItemID: trial.id,
+        Word: trial.word,
+        Initial: trial.initial,
+        Final: trial.final,
+        Condition: `${trial.initial}_${trial.final}`,
+        Response: chosen,
+        CorrectAnswer: trial.answer,
+        Accuracy: isCorrect,
+        PlayCount: playCount,
+        RT_ms: rt
+      });
+
+      currentIndex++;
+      if (currentIndex < trials.length) {
+        loadTrial();
+      } else {
+        finishExperiment();
+      }
+    }
+
+    function finishExperiment() {
+      document.getElementById("screen-quiz").classList.add("hidden");
+      document.getElementById("screen-end").classList.remove("hidden");
+
+      const total = results.length;
+      const correct = results.reduce((sum, r) => sum + r.Accuracy, 0);
+      const accRate = ((correct / total) * 100).toFixed(1);
+
+      const conditions = ["j_i", "j_u", "q_i", "q_u"];
+      let condHTML = `<strong>受訪者：</strong>${subjectId}<br>`;
+      condHTML += `<strong>總答對題數：</strong>${correct} / ${total} 題（整體正確率：${accRate}%）<br><hr style="border:0; border-top:1px solid #e2e0d8; margin:8px 0;">`;
+      condHTML += `<strong>各音韻條件錯誤率：</strong><br>`;
+
+      conditions.forEach(cond => {
+        const subset = results.filter(r => r.Condition === cond);
+        if (subset.length > 0) {
+          const errCount = subset.filter(r => r.Accuracy === 0).length;
+          const errRate = ((errCount / subset.length) * 100).toFixed(1);
+          condHTML += `• 條件 <code>${cond}</code>：錯誤 ${errCount}/${subset.length} 題（錯誤率 ${errRate}%）<br>`;
+        }
+      });
+
+      document.getElementById("summary-stats").innerHTML = condHTML;
+
+      // 自動傳送數據至 Google 試算表
+      uploadToGoogleSheets();
+    }
+
+    function uploadToGoogleSheets() {
+      const statusEl = document.getElementById("upload-status");
+
+      if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("在這裡貼上")) {
+        statusEl.className = "upload-status status-error";
+        statusEl.textContent = "⚠️ 尚未設定 Google 試算表網址，請點擊下方按鈕手動下載數據。";
+        return;
+      }
+
+      fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify(results)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === "success") {
+          statusEl.className = "upload-status status-success";
+          statusEl.textContent = "✅ 作答數據已成功自動寫入雲端試算表！您可以直接關閉此視窗。";
+        } else {
+          throw new Error(data.message || "寫入失敗");
+        }
+      })
+      .catch(error => {
+        statusEl.className = "upload-status status-error";
+        statusEl.textContent = "❌ 自動上傳失敗（可能受限於網路連線），請點擊下方按鈕下載 CSV 檔傳給研究人員。";
+        console.error("Upload error:", error);
+      });
+    }
+
+    function downloadCSV() {
+      const headers = ["Subject", "TrialOrder", "ItemID", "Word", "Initial", "Final", "Condition", "Response", "CorrectAnswer", "Accuracy", "PlayCount", "RT_ms"];
+      const csvRows = [headers.join(",")];
+
+      results.forEach(row => {
+        const values = headers.map(h => `"${row[h]}"`);
+        csvRows.push(values.join(","));
+      });
+
+      const csvString = "\uFEFF" + csvRows.join("\n");
+      const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Perception_${subjectId}_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  </script>
+</body>
+</html>
